@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilgi Arenası - Oda</title>
+    <link rel="icon" href="img/b.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal.active {
+            display: flex;
+        }
+        
+        /* SweetAlert özelleştirmeleri */
+        .bilgi-arenasi-swal {
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .bilgi-arenasi-swal .swal2-title {
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .bilgi-arenasi-swal .swal2-html-container {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+        }
+        .bilgi-arenasi-swal .swal2-confirm {
+            background-color: #3b82f6 !important;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border: none;
+            padding: 10px 24px;
+        }
+        .bilgi-arenasi-swal .swal2-confirm:hover {
+            background-color: #2563eb !important;
+            transform: translateY(-1px);
+        }
+        .bilgi-arenasi-swal .swal2-cancel {
+            background-color: #ef4444 !important;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border: none;
+            padding: 10px 24px;
+        }
+        .bilgi-arenasi-swal .swal2-cancel:hover {
+            background-color: #dc2626 !important;
+            transform: translateY(-1px);
+        }
+        .bilgi-arenasi-swal.success-swal .swal2-icon.swal2-success {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .bilgi-arenasi-swal.error-swal .swal2-icon.swal2-error {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .bilgi-arenasi-swal.warning-swal .swal2-icon.swal2-warning {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        .bilgi-arenasi-swal.info-swal .swal2-icon.swal2-info {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .bilgi-arenasi-swal.question-swal .swal2-icon.swal2-question {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+        
+        /* Sayaç animasyonları */
+        @keyframes countdownPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            20% { transform: scale(1.1); opacity: 1; }
+            70% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes countdownShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        
+        .countdown-number {
+            animation: countdownPulse 0.8s ease-out forwards;
+        }
+        
+        .countdown-start {
+            animation: countdownPulse 0.8s ease-out forwards, countdownShake 0.5s forwards;
+            color: #f59e0b;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.7);
+        }
+
+        /* Döner yükleme animasyonu */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            animation: spin 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Kum saati animasyonu */
+        @keyframes hourglassFlip {
+            0% { transform: rotate(0deg); }
+            20% { transform: rotate(0deg); }
+            30% { transform: rotate(180deg); }
+            70% { transform: rotate(180deg); }
+            80% { transform: rotate(360deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes sandTopFlow {
+            0%, 20% { d: path('M8 4h8v2L12 11 8 6V4z'); opacity: 0.9; }
+            30%, 70% { d: path('M8 4h8v0L12 4 8 4V4z'); opacity: 0; }
+            80%, 100% { d: path('M8 4h8v2L12 11 8 6V4z'); opacity: 0.9; }
+        }
+        
+        @keyframes sandBottomFlow {
+            0%, 20% { d: path('M8 20h8v0L12 20 8 20v0z'); opacity: 0; }
+            30%, 70% { d: path('M8 20h8v-2L12 13 8 18v2z'); opacity: 0.9; }
+            80%, 100% { d: path('M8 20h8v0L12 20 8 20v0z'); opacity: 0; }
+        }
+        
+        .hourglass {
+            animation: hourglassFlip 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            transform-origin: center center;
+            transform-box: fill-box;
+        }
+        
+        .sand-top {
+            animation: sandTopFlow 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        
+        .sand-bottom {
+            animation: sandBottomFlow 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        
+        /* Eskiden kullanılan ama artık gerekli olmayan animasyonlar kaldırıldı */
+    </style>
+</head>
+<body class="text-white">
+    <!-- Ses Dosyaları -->
+    <audio id="alkis-ses" src="sounds/alkis.mp3" preload="auto"></audio>
+    <audio id="wrong-ses" src="sounds/wrong.mp3" preload="auto"></audio>
+    <audio id="start-ses" src="sounds/start.mp3" preload="auto"></audio>
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+            <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                <img src="img/logo.png" alt="Bilgi Arenası Logo" class="h-14 sm:h-16">
+                <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 bg-black bg-opacity-20 p-4 rounded-lg w-full md:w-auto">
+                    <div class="text-center sm:text-left">
+                        <div class="text-base text-gray-200 mb-1">Oda Kodu:</div>
+                        <div class="font-mono font-medium text-white text-xl" id="room-code"></div>
+                    </div>
+                    <button onclick="copyRoomLink()" 
+                            class="bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center space-x-2 w-full sm:w-auto text-base">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span>Linki Kopyala</span>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 w-full md:w-auto justify-center md:justify-end">
+                <button id="ses-kontrol" onclick="toggleSesler()" class="bg-purple-500 p-2 rounded hover:bg-purple-600 transition flex items-center justify-center">
+                    <svg id="ses-acik-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <svg id="ses-kapali-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m-2 2l-2-2m2 2l2 2m-2-2l-2 2" />
+                    </svg>
+                </button>
+                <div class="relative">
+                    <div class="flex items-center space-x-3">
+                        <div id="ping-indicator" class="text-sm flex items-center bg-black bg-opacity-30 px-3 py-1 rounded-full">
+                            <span class="inline-block w-2 h-2 rounded-full bg-gray-500 mr-1"></span>
+                            <span id="ping-value">--</span>
+                            <span class="ml-1 text-xs text-gray-300">ms</span>
+                        </div>
+                        <button id="user-dropdown-button" class="font-semibold flex items-center space-x-1 hover:text-blue-300 transition">
+                            <span id="username"></span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 text-gray-800">
+                        <div class="py-1">
+                            <button onclick="showChangePasswordModal()" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition">
+                                Şifre Değiştir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="leaveRoom()" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition">Odadan Çık</button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <!-- Sol Panel - Oyuncular -->
+            <div class="md:col-span-3 bg-white bg-opacity-10 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">Oyuncular</h2>
+                <div id="players-list" class="space-y-2">
+                    <!-- Oyuncular buraya eklenecek -->
+                </div>
+            </div>
+
+            <!-- Orta Panel - Oyun Alanı -->
+            <div class="md:col-span-6 flex flex-col space-y-6">
+                <!-- Admin Kontrolleri -->
+                <div id="admin-controls" class="bg-white bg-opacity-10 p-6 rounded-lg hidden">
+                    <h2 class="text-xl font-semibold mb-4">Yönetici Kontrolleri</h2>
+                    <div class="space-y-4">
+                      
+                        <button onclick="startGame()" class="w-full bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition">
+                            Oyunu Başlat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Oyun Durumu -->
+                <div id="game-status" class="bg-white bg-opacity-10 p-6 rounded-lg text-center">
+                    <h2 class="text-2xl font-bold mb-4">Oyun Başlamayı Bekliyor</h2>
+                    <p class="text-lg mb-6">Admin oyunu başlatana kadar bekleyin...</p>
+                    
+                    <div class="flex justify-center items-center">
+                        <!-- Kum saati animasyonu -->
+                        <div class="relative w-20 h-20">
+                            <svg class="w-20 h-20 text-white hourglass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <!-- Kum saati çerçevesi - daha temiz hatlar -->
+                                <path d="M7 3h10v3.5L12 12l5 5.5V21H7v-3.5L12 12 7 6.5V3z" stroke="white" stroke-width="1" fill="none"/>
+                                
+                                <!-- Üst kum -->
+                                <path class="sand-top" d="M8 4h8v2L12 11 8 6V4z" fill="white" opacity="0.9" />
+                                
+                                <!-- Alt kum -->
+                                <path class="sand-bottom" d="M8 20h8v-2L12 13 8 18v2z" fill="white" opacity="0.9" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-4 text-white text-sm font-medium bg-white bg-opacity-5 border border-white border-opacity-10 px-3 py-1.5 rounded-md mx-auto inline-flex items-center">
+                        <span class="mr-1.5 opacity-80">Oyuncular bekleniyor</span>
+                        <span class="flex space-x-0.5">
+                            <span class="animate-pulse text-xs">.</span>
+                            <span class="animate-pulse text-xs" style="animation-delay: 0.3s">.</span>
+                            <span class="animate-pulse text-xs" style="animation-delay: 0.6s">.</span>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- Soru Alanı -->
+                <div id="question-area" class="bg-white bg-opacity-10 p-6 rounded-lg hidden">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-semibold">Soru <span id="question-number">1</span>/<span id="total-questions">10</span></span>
+                            <span id="timer" class="text-2xl font-bold">30</span>
+                        </div>
+                        <div class="w-full bg-white bg-opacity-20 h-2 rounded-full mt-2">
+                            <div id="timer-bar" class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-20 p-4 sm:p-6 rounded-lg mb-6">
+                        <p id="question-text" class="text-xl sm:text-2xl text-center font-bold">Soru metni buraya gelecek...</p>
+                    </div>
+                    <div id="options" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Şıklar buraya eklenecek -->
+                    </div>
+                    <div id="next-question" class="mt-4 hidden">
+                        <div class="text-center mb-4">
+                            <p class="text-lg font-semibold mb-2">Doğru Cevap: <span id="correct-answer" class="text-green-500">-</span></p>
+                        </div>
+                        <button onclick="nextQuestion()" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition text-lg font-bold hidden">
+                            Sonraki Soruya Geç
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Oyun Sonu -->
+                <div id="game-end" class="bg-white bg-opacity-10 p-6 rounded-lg hidden">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Oyun Bitti!</h2>
+                    <div id="winner" class="text-center mb-6">
+                        <p class="text-xl">Kazanan:</p>
+                        <p id="winner-name" class="text-2xl font-bold text-green-500">-</p>
+                        <p id="winner-score" class="text-xl">0 puan</p>
+                    </div>
+                    <div id="final-scores" class="space-y-2">
+                        <!-- Final skorları buraya eklenecek -->
+                    </div>
+                </div>
+
+                <!-- Chat Alanı -->
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Sohbet</h2>
+                        <div class="flex items-center space-x-2">
+                            <button id="emoji-button" class="text-white opacity-75 hover:opacity-100 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+                            <button id="clear-chat" onclick="clearChat()" class="text-white opacity-75 hover:opacity-100 transition hidden">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="chat-messages" class="h-64 overflow-y-auto mb-4 space-y-2 bg-black bg-opacity-20 p-4 rounded-lg">
+                        <!-- Mesajlar buraya eklenecek -->
+                    </div>
+                    
+                    <!-- Emoji Paneli -->
+                    <div id="emoji-panel" class="hidden bg-white bg-opacity-20 p-3 rounded-lg mb-2 grid grid-cols-6 gap-2">
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😊</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😂</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">👍</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">❤️</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">👏</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🎉</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🤔</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😢</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😎</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">👋</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🔥</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">⭐</button>
+                        <!-- Yeni emojiler -->
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😍</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🙏</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😱</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🤩</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🤣</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🥰</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🤗</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">👌</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🤟</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">😭</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">🙄</button>
+                        <button class="emoji-btn text-2xl hover:bg-white hover:bg-opacity-20 p-1 rounded transition">💪</button>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="text" id="chat-input" 
+                               class="w-full bg-white bg-opacity-20 text-white placeholder-gray-300 px-4 py-2 pr-24 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Mesajınızı yazın..."
+                               maxlength="200">
+                        <button onclick="sendMessage()" 
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 transition">
+                            Gönder
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Panel - Skor Tablosu -->
+            <div class="md:col-span-3 bg-white bg-opacity-10 p-6 rounded-lg">
+                <div class="flex items-center space-x-2 mb-4">
+                    <h2 class="text-xl font-semibold">Skor Tablosu</h2>
+                    <img src="img/b.png" alt="B" class="h-10 w-auto">
+                </div>
+                <div id="scoreboard" class="space-y-2">
+                    <!-- Skorlar buraya eklenecek -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Özel Soru Ekleme Modal -->
+    <div id="custom-question-modal" class="modal items-center justify-center">
+        <div class="bg-white text-gray-800 p-8 rounded-lg shadow-xl w-[600px] max-w-full">
+            <h3 class="text-2xl font-bold mb-6 text-center">Özel Soru Ekle</h3>
+            <form id="custom-question-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Soru</label>
+                    <textarea id="question-input" class="w-full p-2 border rounded" rows="3" required></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">A Şıkkı</label>
+                        <input type="text" id="option-a" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">B Şıkkı</label>
+                        <input type="text" id="option-b" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">C Şıkkı</label>
+                        <input type="text" id="option-c" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">D Şıkkı</label>
+                        <input type="text" id="option-d" class="w-full p-2 border rounded" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Doğru Cevap</label>
+                    <select id="correct-answer" class="w-full p-2 border rounded" required>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 transition">Ekle</button>
+                    <button type="button" onclick="hideCustomQuestionModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Şifre Değiştirme Modal -->
+    <div id="change-password-modal" class="modal items-center justify-center">
+        <div class="bg-white text-gray-800 p-8 rounded-lg shadow-xl w-96 max-w-full">
+            <h3 class="text-2xl font-bold mb-6 text-center">Şifre Değiştir</h3>
+            <form id="change-password-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mevcut Şifre</label>
+                    <input type="password" id="current-password" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Yeni Şifre</label>
+                    <input type="password" id="new-password" class="w-full p-2 border rounded" required minlength="6">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Yeni Şifre (Tekrar)</label>
+                    <input type="password" id="confirm-password" class="w-full p-2 border rounded" required minlength="6">
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 transition">Değiştir</button>
+                    <button type="button" onclick="hideChangePasswordModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let isAdmin = false;
+        let seslerAcik = true; // Sesler varsayılan olarak açık
+        let mesajBekleme = false; // Mesaj gönderme bekleme durumu
+        let timer; // Timer'ı kontrol etmek için değişken
+        let oyunSuruyor = false;
+        let roomCode = null;
+        // let playerToKickData = null; // Artık buna gerek yok
+        
+        // Ping kontrolü değişkenleri
+        let pingInterval;
+        let pingTimeout;
+        
+        // Ping ölçümü fonksiyonu
+        function checkPing() {
+            const startTime = Date.now();
+            
+            // Ping zaman aşımı (2 saniye)
+            pingTimeout = setTimeout(() => {
+                document.getElementById('ping-indicator').innerHTML = `
+                    <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>
+                    <span id="ping-value">Bağlantı Hatası</span>
+                `;
+            }, 2000);
+            
+            socket.emit('ping', () => {
+                clearTimeout(pingTimeout);
+                const pingTime = Date.now() - startTime;
+                updatePingDisplay(pingTime);
+            });
+        }
+        
+        // Ping değerini gösterme fonksiyonu
+        function updatePingDisplay(ping) {
+            const pingElement = document.getElementById('ping-value');
+            const indicatorElement = document.getElementById('ping-indicator').querySelector('span:first-child');
+            
+            pingElement.textContent = ping;
+            
+            // Ping değerine göre renklendirme
+            if (ping < 60) {
+                indicatorElement.className = 'inline-block w-2 h-2 rounded-full bg-green-500 mr-1';
+            } else if (ping < 120) {
+                indicatorElement.className = 'inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1';
+            } else if (ping < 200) {
+                indicatorElement.className = 'inline-block w-2 h-2 rounded-full bg-orange-500 mr-1';
+            } else {
+                indicatorElement.className = 'inline-block w-2 h-2 rounded-full bg-red-500 mr-1';
+            }
+        }
+        
+        // Ping ölçümünü başlat
+        function startPingChecks() {
+            // İlk ölçümü hemen yap
+            checkPing();
+            // Sonraki ölçümleri düzenli olarak yap (5 saniyede bir)
+            pingInterval = setInterval(checkPing, 5000);
+        }
+        
+        // Ping ölçümünü durdur
+        function stopPingChecks() {
+            clearInterval(pingInterval);
+            clearTimeout(pingTimeout);
+        }
+
+        // Özelleştirilmiş SweetAlert fonksiyonu
+        function temaSweetAlert(config) {
+            const iconClass = config.icon ? `${config.icon}-swal` : '';
+            return Swal.fire({
+                ...config,
+                customClass: {
+                    popup: `bilgi-arenasi-swal ${iconClass}`,
+                    title: 'swal2-title',
+                    htmlContainer: 'swal2-html-container',
+                    confirmButton: 'swal2-confirm',
+                    cancelButton: 'swal2-cancel'
+                },
+                buttonsStyling: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#ef4444',
+                background: 'rgba(0,0,0,0)',
+                backdrop: config.backdrop || `
+                    rgba(0,0,0,0.75)
+                    url("/images/confetti.gif")
+                    left top
+                `
+            });
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            roomCode = urlParams.get('code');
+            
+            if (!roomCode) {
+                window.location.href = '/game.html';
+                return;
+            }
+            
+            document.getElementById('room-code').textContent = roomCode;
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            document.getElementById('username').textContent = user.username;
+            
+            // Odaya katıl
+            socket.emit('joinRoom', { roomCode, token }, (response) => {
+                if (!response.success) {
+                    // Özel olarak "atılma" mesajı için kontrol
+                    if (response.message && response.message.includes("Bu odadan atıldınız")) {
+                        temaSweetAlert({
+                            title: 'Bu Odadan Atıldınız!',
+                            text: 'Bu odadan atıldınız. 5 dakika sonra tekrar katılabilirsiniz.',
+                            icon: 'error',
+                            confirmButtonText: 'Tamam',
+                            allowOutsideClick: false,
+                            backdrop: `
+                                rgba(0,0,0,0.85)
+                                url("/images/nyan-cat.gif")
+                                left top
+                                no-repeat
+                            `
+                        }).then(() => {
+                            window.location.href = '/game.html';
+                        });
+                    } else {
+                        // Diğer hatalar için
+                        temaSweetAlert({
+                            title: 'Hata!',
+                            text: response.message || 'Odaya katılırken bir hata oluştu!',
+                            icon: 'error'
+                        }).then(() => {
+                            window.location.href = '/game.html';
+                        });
+                    }
+                    return;
+                }
+                
+                isAdmin = response.isAdmin;
+                if (isAdmin) {
+                    document.getElementById('admin-controls').classList.remove('hidden');
+                    // Temizleme butonunu admin ise göster
+                    document.getElementById('clear-chat').classList.remove('hidden');
+                }
+            });
+            
+            // Emoji butonu işlemleri
+            document.getElementById('emoji-button').addEventListener('click', toggleEmojiPanel);
+            
+            // Emoji butonlarına event dinleyicileri ekle
+            document.querySelectorAll('.emoji-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    sendEmoji(e.target.textContent);
+                });
+            });
+            
+            // Emoji panelinin dışına tıklandığında panel kapansın
+            document.addEventListener('click', (e) => {
+                const emojiPanel = document.getElementById('emoji-panel');
+                const emojiButton = document.getElementById('emoji-button');
+                
+                if (!emojiPanel.contains(e.target) && e.target !== emojiButton && !emojiButton.contains(e.target)) {
+                    emojiPanel.classList.add('hidden');
+                }
+            });
+            
+            // Ses kontrol butonunun title özelliğini ayarla
+            document.getElementById('ses-kontrol').title = "Sesleri Kapat";
+            
+            // Dropdown kontrolü
+            setupUserDropdown();
+            
+            // Ping kontrolünü başlat
+            startPingChecks();
+        });
+        
+        // Sayfa kapatıldığında ping kontrolünü durdur
+        window.addEventListener('beforeunload', () => {
+            stopPingChecks();
+        });
+        
+        // Kullanıcı dropdown kontrolü
+        function setupUserDropdown() {
+            const dropdownButton = document.getElementById('user-dropdown-button');
+            const dropdown = document.getElementById('user-dropdown');
+            
+            // Dropdown butonuna tıklandığında
+            dropdownButton.addEventListener('click', () => {
+                dropdown.classList.toggle('hidden');
+            });
+            
+            // Sayfa herhangi bir yerine tıklandığında dropdown'ı kapat
+            document.addEventListener('click', (e) => {
+                if (!dropdownButton.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Şifre değiştirme modalı
+        function showChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.add('active');
+            document.getElementById('user-dropdown').classList.add('hidden');
+        }
+        
+        function hideChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.remove('active');
+            // Formu sıfırla
+            document.getElementById('change-password-form').reset();
+        }
+        
+        // Şifre değiştirme form işlemleri
+        document.getElementById('change-password-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Yeni şifrelerin eşleştiğini kontrol et
+            if (newPassword !== confirmPassword) {
+                temaSweetAlert({
+                    title: 'Hata!',
+                    text: 'Yeni şifreler eşleşmiyor!',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            // Yeni şifre uzunluğunu kontrol et
+            if (newPassword.length < 6) {
+                temaSweetAlert({
+                    title: 'Hata!',
+                    text: 'Yeni şifre en az 6 karakter olmalıdır!',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            // Şifre değiştirmeden önce işlem göstergesi
+            temaSweetAlert({
+                title: 'İşlem yapılıyor...',
+                text: 'Lütfen bekleyin.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    
+                    // Şifre değiştirme isteğini gönder
+                    socket.emit('changePassword', {
+                        token: localStorage.getItem('token'),
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    }, (response) => {
+                        if (response.success) {
+                            hideChangePasswordModal();
+                            temaSweetAlert({
+                                title: 'Başarılı!',
+                                text: 'Şifreniz başarıyla değiştirildi.',
+                                icon: 'success'
+                            });
+                        } else {
+                            temaSweetAlert({
+                                title: 'Hata!',
+                                text: response.message || 'Şifre değiştirme işlemi başarısız oldu!',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Oyuncu listesi güncelleme
+        socket.on('updatePlayers', (players) => {
+            const playersList = document.getElementById('players-list');
+            playersList.innerHTML = '';
+            
+            // Kullanıcının yeni admin durumunu kontrol et
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const currentPlayer = players.find(p => p.id === currentUser.id);
+            
+            if (currentPlayer) {
+                isAdmin = currentPlayer.isAdmin;
+                
+                // Admin kontrollerini güncelle
+                if (isAdmin && !oyunSuruyor) {
+                    document.getElementById('admin-controls').classList.remove('hidden');
+                }
+                
+                // Temizleme butonunun görünürlüğünü güncelle
+                if (isAdmin) {
+                    document.getElementById('clear-chat').classList.remove('hidden');
+                } else {
+                    document.getElementById('clear-chat').classList.add('hidden');
+                }
+                
+                // Eğer oyun devam ediyorsa ve admin değiştiyse, sonraki soru butonunu göster/gizle
+                if (oyunSuruyor) {
+                    const nextButton = document.querySelector('#next-question button');
+                    if (nextButton) {
+                        if (isAdmin) {
+                            nextButton.classList.remove('hidden');
+                        } else {
+                            nextButton.classList.add('hidden');
+                        }
+                    }
+                }
+            }
+
+            // Oyuncu listesini güncelle
+            players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 hover:bg-white hover:bg-opacity-10 rounded transition';
+                
+                // Admin rozeti ve kullanıcı adı
+                const userInfo = document.createElement('div');
+                userInfo.className = 'flex items-center space-x-2';
+                userInfo.innerHTML = `
+                    <span class="font-medium">${player.username}</span>
+                    ${player.isAdmin ? '<span class="text-xs bg-yellow-500 px-2 py-1 rounded">Admin</span>' : ''}
+                `;
+                
+                div.appendChild(userInfo);
+                
+                // Admin için kontrol butonları
+                if (isAdmin && player.id !== currentUser.id) {
+                    const controls = document.createElement('div');
+                    controls.className = 'flex items-center space-x-2';
+
+                    // Susturma butonu
+                    const muteButton = document.createElement('button');
+                    muteButton.className = `${player.isMuted ? 'bg-gray-500' : 'bg-orange-500 hover:bg-orange-600'} text-white px-3 py-1 rounded-lg text-sm font-medium transition flex items-center space-x-1`;
+                    muteButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <span>${player.isMuted ? 'Susturuldu' : 'Sustur'}</span>
+                    `;
+                    muteButton.onclick = () => toggleMute(player.id, player.username);
+
+                    // Oyundan atma butonu
+                    const kickButton = document.createElement('button');
+                    kickButton.className = 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition flex items-center space-x-1';
+                    kickButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Oyundan At</span>
+                    `;
+                    kickButton.onclick = () => showKickModal(player.id, player.username);
+
+                    controls.appendChild(muteButton);
+                    controls.appendChild(kickButton);
+                    div.appendChild(controls);
+                }
+                
+                playersList.appendChild(div);
+            });
+        });
+
+        // Skor tablosu güncelleme
+        socket.on('updateScores', (scores) => {
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.innerHTML = '';
+            scores.sort((a, b) => b.score - a.score).forEach(score => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between';
+                div.innerHTML = `
+                    <span class="font-medium">${score.username}</span>
+                    <span class="font-bold">${score.score}</span>
+                `;
+                scoreboard.appendChild(div);
+            });
+        });
+
+        // Oyun durumu güncelleme
+        socket.on('gameStatus', (status) => {
+            oyunSuruyor = status.started;
+            document.getElementById('total-questions').textContent = status.totalQuestions;
+            
+            if (status.started) {
+                // Oyun başladığında start sesini çal
+                if (seslerAcik) {
+                    document.getElementById('start-ses').play();
+                }
+                
+                document.getElementById('game-status').classList.add('hidden');
+                document.getElementById('question-area').classList.add('hidden');
+                document.getElementById('game-end').classList.add('hidden');
+                document.getElementById('admin-controls').classList.add('hidden');
+
+                // Geri sayım başlat
+                const countdownDiv = document.createElement('div');
+                countdownDiv.id = 'countdown';
+                countdownDiv.className = 'fixed top-0 left-0 w-full h-full flex items-center justify-center z-50';
+                
+                // Buğulu arka plan
+                const blurBg = document.createElement('div');
+                blurBg.className = 'absolute inset-0 bg-black bg-opacity-40 backdrop-blur-md';
+                countdownDiv.appendChild(blurBg);
+                
+                // Sayaç içeriği
+                const countText = document.createElement('div');
+                countText.className = 'text-8xl font-bold text-white relative z-10';
+                countdownDiv.appendChild(countText);
+                
+                document.body.appendChild(countdownDiv);
+
+                let count = 3;
+                countText.textContent = count;
+                countText.classList.add('countdown-number');
+
+                const countInterval = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countText.textContent = count;
+                        // Animasyonu yeniden tetiklemek için sınıfı kaldırıp tekrar ekliyoruz
+                        countText.classList.remove('countdown-number');
+                        void countText.offsetWidth; // Reflow tetikliyor
+                        countText.classList.add('countdown-number');
+                    } else if (count === 0) {
+                        countText.textContent = 'BAŞLA!';
+                        countText.classList.remove('countdown-number');
+                        void countText.offsetWidth; // Reflow tetikliyor
+                        countText.classList.add('countdown-start');
+                    } else {
+                        clearInterval(countInterval);
+                        countdownDiv.remove();
+                        document.getElementById('question-area').classList.remove('hidden');
+                    }
+                }, 1000);
+            } else {
+                document.getElementById('game-status').classList.remove('hidden');
+                document.getElementById('question-area').classList.add('hidden');
+                document.getElementById('game-end').classList.add('hidden');
+                if (isAdmin) {
+                    document.getElementById('admin-controls').classList.remove('hidden');
+                }
+            }
+        });
+
+        // Soru gösterme
+        socket.on('showQuestion', (question) => {
+            // Start sesini çal
+            if (seslerAcik) {
+                document.getElementById('start-ses').play();
+            }
+            
+            // Geri sayım başlat
+            const countdownDiv = document.createElement('div');
+            countdownDiv.id = 'countdown';
+            countdownDiv.className = 'fixed top-0 left-0 w-full h-full flex items-center justify-center z-50';
+                
+            // Buğulu arka plan
+            const blurBg = document.createElement('div');
+            blurBg.className = 'absolute inset-0 bg-black bg-opacity-40 backdrop-blur-md';
+            countdownDiv.appendChild(blurBg);
+            
+            // Sayaç içeriği
+            const countText = document.createElement('div');
+            countText.className = 'text-8xl font-bold text-white relative z-10';
+            countdownDiv.appendChild(countText);
+            
+            document.body.appendChild(countdownDiv);
+
+            let count = 3;
+            countText.textContent = count;
+            countText.classList.add('countdown-number');
+            document.getElementById('question-area').classList.add('hidden');
+
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countText.textContent = count;
+                    // Animasyonu yeniden tetiklemek için sınıfı kaldırıp tekrar ekliyoruz
+                    countText.classList.remove('countdown-number');
+                    void countText.offsetWidth; // Reflow tetikliyor
+                    countText.classList.add('countdown-number');
+                } else if (count === 0) {
+                    countText.textContent = 'BAŞLA!';
+                    countText.classList.remove('countdown-number');
+                    void countText.offsetWidth; // Reflow tetikliyor
+                    countText.classList.add('countdown-start');
+                } else {
+                    clearInterval(countInterval);
+                    countdownDiv.remove();
+                    showQuestionContent(question);
+                    startTimer(question.time);
+                }
+            }, 1000);
+        });
+
+        // Soru içeriğini gösterme fonksiyonu
+        function showQuestionContent(question) {
+            document.getElementById('question-area').classList.remove('hidden');
+            document.getElementById('question-number').textContent = question.number;
+            document.getElementById('total-questions').textContent = question.total;
+            document.getElementById('question-text').textContent = question.question_text;
+            document.getElementById('timer').textContent = question.time;
+            document.getElementById('next-question').classList.add('hidden');
+
+            // Debug için soru verisini konsola yazdır
+            console.log('Gelen soru verisi:', question);
+
+            const options = document.getElementById('options');
+            options.innerHTML = '';
+            Object.entries(question.options).forEach(([letter, text]) => {
+                const button = document.createElement('button');
+                button.className = 'bg-white bg-opacity-20 p-4 rounded-lg hover:bg-opacity-30 transition';
+                button.onclick = () => submitAnswer(letter);
+                button.innerHTML = `
+                    <span class="font-bold">${letter})</span>
+                    <span>${text}</span>
+                `;
+                options.appendChild(button);
+            });
+        }
+
+        // Cevap gönderme
+        function submitAnswer(answer) {
+            if (!oyunSuruyor) return;
+            
+            // Kullanıcının seçtiği şıkkı ve doğru cevabı saklayalım
+            const selectedAnswer = answer;
+            
+            socket.emit('submitAnswer', { answer, roomCode }, (response) => {
+                if (!response.success) {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Cevabınız gönderilemedi!',
+                        icon: 'error',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    // Tüm şıkları devre dışı bırak
+                    const options = document.getElementById('options');
+                    Array.from(options.children).forEach(button => {
+                        button.disabled = true;
+                        button.classList.add('opacity-50');
+                        button.classList.remove('hover:bg-opacity-30');
+                        
+                        // Seçilen şıkkın arka plan rengini sarı yap
+                        const buttonLetter = button.querySelector('span:first-child').textContent.charAt(0);
+                        if (buttonLetter === selectedAnswer) {
+                            button.classList.add('bg-yellow-500', 'bg-opacity-50');
+                        }
+                    });
+                    
+                                // Cevap sonucunun sonraki soru görüntülendiğinde belli olacağını bildiren mesaj
+            const notification = document.createElement('div');
+            notification.className = 'text-center mt-2 text-yellow-300 font-medium';
+            notification.textContent = 'Cevabınız kaydedildi. Sonuç süre tamamlandığında gösterilecek.';
+            notification.id = 'answer-notification';
+            document.getElementById('options').insertAdjacentElement('afterend', notification);
+                }
+            });
+        }
+
+        // Şıkları devre dışı bırak
+        function disableOptions() {
+            const options = document.getElementById('options');
+            Array.from(options.children).forEach(button => {
+                button.disabled = true;
+                button.classList.add('opacity-50');
+                button.classList.remove('hover:bg-opacity-30');
+            });
+        }
+
+        // Timer başlatma
+        function startTimer(time) {
+            const timerElement = document.getElementById('timer');
+            const timerBar = document.getElementById('timer-bar');
+            let timeLeft = time;
+
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                const percentage = (timeLeft / time) * 100;
+                timerBar.style.width = `${percentage}%`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    disableOptions();
+                }
+            }, 1000);
+        }
+
+        // Soru süresi dolduğunda
+        socket.on('questionTimeout', (data) => {
+            clearInterval(timer);
+            disableOptions();
+            
+            // Önceki bildirim mesajını temizle
+            const notification = document.getElementById('answer-notification');
+            if (notification) {
+                notification.remove();
+            }
+            
+            // Doğru cevabı göster
+            const correctAnswer = data.correctAnswer;
+            document.getElementById('correct-answer').textContent = correctAnswer;
+            document.getElementById('next-question').classList.remove('hidden');
+            document.getElementById('correct-answer').parentElement.classList.add('bg-green-500', 'bg-opacity-20', 'p-2', 'rounded-lg');
+            
+            // Doğru ve yanlış şıkları renklendir
+            const options = document.getElementById('options');
+            Array.from(options.children).forEach(button => {
+                const buttonLetter = button.querySelector('span:first-child').textContent.charAt(0);
+                
+                if (buttonLetter === correctAnswer) {
+                    // Doğru cevabı yeşil renklendir
+                    button.classList.remove('opacity-50');
+                    button.classList.add('bg-green-500');
+                } else if (button.classList.contains('bg-purple-500')) {
+                    // Yanlış seçilmiş şıkkı kırmızı renklendir
+                    button.classList.remove('bg-purple-500', 'opacity-50');
+                    button.classList.add('bg-red-500');
+                }
+            });
+            
+            // Skor tablosunu güncelle
+            updateScores(data.scores);
+            
+            if (isAdmin) {
+                const nextButton = document.querySelector('#next-question button');
+                nextButton.classList.remove('hidden');
+                
+                // Son soru kontrolü
+                const currentQuestionNumber = parseInt(document.getElementById('question-number').textContent);
+                const totalQuestions = parseInt(document.getElementById('total-questions').textContent);
+                
+                if (currentQuestionNumber === totalQuestions) {
+                    nextButton.textContent = 'Puan Tablosunu Göster';
+                } else {
+                    nextButton.textContent = 'Sonraki Soruya Geç';
+                }
+            }
+        });
+
+        // Oyun sonu
+        socket.on('gameEnd', (data) => {
+            document.getElementById('game-status').classList.add('hidden');
+            document.getElementById('question-area').classList.add('hidden');
+            document.getElementById('game-end').classList.remove('hidden');
+
+            // Kazananı göster
+            document.getElementById('winner-name').textContent = data.winner.username;
+            document.getElementById('winner-score').textContent = `${data.winner.score} puan`;
+
+            // Final skorlarını göster
+            const finalScores = document.getElementById('final-scores');
+            finalScores.innerHTML = '';
+            data.scores.sort((a, b) => b.score - a.score).forEach((player, index) => {
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-3 rounded';
+                scoreDiv.innerHTML = `
+                    <span class="font-bold">${index + 1}.</span>
+                    <span>${player.username}</span>
+                    <span class="font-bold">${player.score} puan</span>
+                `;
+                finalScores.appendChild(scoreDiv);
+            });
+        });
+
+        // Sonraki soruya geç
+        function nextQuestion() {
+            if (!isAdmin) return;
+            
+            // Start sesini çal
+            if (seslerAcik) {
+                document.getElementById('start-ses').play();
+            }
+            
+            socket.emit('nextQuestion', { roomCode }, (response) => {
+                if (!response.success) {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Sonraki soruya geçilirken bir hata oluştu!',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+
+        // Skor tablosunu güncelle
+        function updateScores(scores) {
+            const scoreboard = document.getElementById('scoreboard');
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            
+            // Eski puanları sakla
+            const oldScores = new Map();
+            Array.from(scoreboard.children).forEach(div => {
+                const username = div.querySelector('span:first-child').textContent;
+                const scoreText = div.querySelector('span:last-child').textContent;
+                const score = parseInt(scoreText);
+                oldScores.set(username, score);
+            });
+            
+            scoreboard.innerHTML = '';
+            
+            scores.sort((a, b) => b.score - a.score).forEach((player, index) => {
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-2 rounded';
+                scoreDiv.innerHTML = `
+                    <span class="font-bold">${index + 1}.</span>
+                    <span>${player.username}</span>
+                    <span class="font-bold">${player.score} puan</span>
+                `;
+                scoreboard.appendChild(scoreDiv);
+                
+                // Eğer bu kullanıcı şu anki kullanıcı ise puan değişikliğini kontrol et
+                if (player.id === currentUser.id) {
+                    const oldScore = oldScores.get(player.username) || 0;
+                    const puan = player.score;
+                    
+                    if (puan > oldScore) {
+                        // Kullanıcının puanı artmışsa alkış sesi çal
+                        if (seslerAcik) {
+                            document.getElementById('alkis-ses').play();
+                        }
+                    } else if (puan < oldScore) {
+                        // Kullanıcının puanı azalmışsa hata sesi çal
+                        if (seslerAcik) {
+                            document.getElementById('wrong-ses').play();
+                        }
+                    } else if (oldScores.size === 0 && puan === 0) {
+                        // İlk kez puan tablosu yükleniyorsa ve puan 0 ise ses çalma
+                    } else if (oldScores.size > 0 && puan === 0) {
+                        // Sıfırlama durumunda hata sesi çal
+                        if (seslerAcik) {
+                            document.getElementById('wrong-ses').play();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Modal işlemleri
+        function showCustomQuestionModal() {
+            document.getElementById('custom-question-modal').classList.add('active');
+        }
+
+        function hideCustomQuestionModal() {
+            document.getElementById('custom-question-modal').classList.remove('active');
+        }
+
+        // Özel soru ekleme
+        document.getElementById('custom-question-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const questionData = {
+                text: document.getElementById('question-input').value,
+                optionA: document.getElementById('option-a').value,
+                optionB: document.getElementById('option-b').value,
+                optionC: document.getElementById('option-c').value,
+                optionD: document.getElementById('option-d').value,
+                correctAnswer: document.getElementById('correct-answer').value,
+                roomCode
+            };
+
+            socket.emit('addCustomQuestions', { questions: [questionData], roomCode }, (response) => {
+                if (response.success) {
+                    hideCustomQuestionModal();
+                    document.getElementById('custom-question-form').reset();
+                    
+                    // Başarı bildirimi
+                    temaSweetAlert({
+                        title: 'Başarılı!',
+                        text: 'Özel soru başarıyla eklendi.',
+                        icon: 'success',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Soru eklenirken bir hata oluştu!',
+                        icon: 'error'
+                    });
+                }
+            });
+        });
+
+        // Oyunu başlatma
+        function startGame() {
+            socket.emit('startGame', { roomCode }, (response) => {
+                if (!response.success) {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Oyun başlatılırken bir hata oluştu!',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+
+        // Odadan çıkma
+        function leaveRoom() {
+            temaSweetAlert({
+                title: 'Odadan Çıkacak mısınız?',
+                text: 'Odadan çıkmak istediğinize emin misiniz?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, Çık',
+                cancelButtonText: 'İptal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    socket.emit('leaveRoom', { roomCode });
+                    
+                    temaSweetAlert({
+                        title: 'Odadan Ayrılıyorsunuz...',
+                        text: 'Ana sayfaya yönlendiriliyorsunuz.',
+                        icon: 'info',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    }).then(() => {
+                        window.location.href = '/game.html';
+                    });
+                }
+            });
+        }
+
+        // Kullanıcı atma modalı
+        function showKickModal(playerId, username) {
+            // Sweet Alert ile onay penceresi göster
+            temaSweetAlert({
+                title: 'Oyuncuyu At',
+                html: `<b>${username}</b> adlı oyuncuyu odadan atmak istediğinize emin misiniz?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, At',
+                cancelButtonText: 'İptal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    socket.emit('kickPlayer', { roomCode, playerId });
+                    
+                    // İşlem başarılı bildirimi
+                    temaSweetAlert({
+                        title: 'Oyuncu Atıldı!',
+                        text: `${username} adlı oyuncu odadan atıldı.`,
+                        icon: 'success',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        }
+
+        // Kullanıcı atıldığında
+        socket.on('kicked', () => {
+            // Sweet Alert ile bildirim göster
+            temaSweetAlert({
+                title: 'Odadan Atıldınız!',
+                text: 'Admin tarafından bu odadan atıldınız. 5 dakika boyunca odaya tekrar katılamazsınız.',
+                icon: 'error',
+                confirmButtonText: 'Tamam',
+                allowOutsideClick: false,
+                backdrop: `
+                    rgba(0,0,0,0.85)
+                    url("/images/nyan-cat.gif")
+                    left top
+                    no-repeat
+                `
+            }).then((result) => {
+                window.location.href = '/game.html';
+            });
+        });
+
+        // Hata mesajları
+        socket.on('error', (data) => {
+            temaSweetAlert({
+                title: 'Hata!',
+                text: data.message || 'Bir hata oluştu!',
+                icon: 'error'
+            });
+        });
+
+        // Oda linkini kopyalama fonksiyonu
+        function copyRoomLink() {
+            const roomLink = `${window.location.origin}/room.html?code=${roomCode}`;
+            
+            try {
+                // Alternatif kopyalama yöntemi
+                const textarea = document.createElement('textarea');
+                textarea.value = roomLink;
+                textarea.style.position = 'fixed';  // Ekranda görünmemesi için
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // Kopyalama başarılı bildirimi
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Oda linki kopyalandı!</span>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // 3 saniye sonra bildirimi kaldır
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            } catch (err) {
+                console.error('Kopyalama hatası:', err);
+                alert('Oda linki kopyalanırken bir hata oluştu!');
+            }
+        }
+
+        // Animasyon için CSS ekle
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Ses kontrolü
+        function toggleSesler() {
+            seslerAcik = !seslerAcik;
+            const button = document.getElementById('ses-kontrol');
+            const sesAcikIcon = document.getElementById('ses-acik-icon');
+            const sesKapaliIcon = document.getElementById('ses-kapali-icon');
+            
+            if (seslerAcik) {
+                button.title = "Sesleri Kapat";
+                sesAcikIcon.classList.remove('hidden');
+                sesKapaliIcon.classList.add('hidden');
+                button.classList.remove('bg-gray-500');
+                button.classList.add('bg-purple-500', 'hover:bg-purple-600');
+            } else {
+                button.title = "Sesleri Aç";
+                sesAcikIcon.classList.add('hidden');
+                sesKapaliIcon.classList.remove('hidden');
+                button.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                button.classList.add('bg-gray-500');
+            }
+            
+            // Ses elementlerinin sesini kapat/aç
+            document.getElementById('alkis-ses').muted = !seslerAcik;
+            document.getElementById('wrong-ses').muted = !seslerAcik;
+            document.getElementById('start-ses').muted = !seslerAcik;
+            
+            // Bildirim göster
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-purple-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Sesler ${seslerAcik ? 'açıldı' : 'kapatıldı'}!</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // 3 saniye sonra bildirimi kaldır
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Chat fonksiyonları
+        let mutedPlayers = new Set();
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            // Boş mesaj kontrolü
+            if (!message) {
+                return; // Eğer mesaj boşsa hiçbir işlem yapma
+            }
+            
+            // Admin olmayan kullanıcılar için bekleme süresi kontrolü
+            if (!isAdmin && mesajBekleme) {
+                const notification = document.createElement('div');
+                notification.className = 'text-center mt-2 text-yellow-300 font-medium';
+                notification.id = 'cooldown-notification';
+                notification.textContent = 'Yeni mesaj göndermek için lütfen bekleyin...';
+                
+                // Daha önce eklenmiş bildirim varsa kaldır
+                const oldNotification = document.getElementById('cooldown-notification');
+                if (oldNotification) {
+                    oldNotification.remove();
+                }
+                
+                document.getElementById('chat-input').insertAdjacentElement('afterend', notification);
+                
+                // 3 saniye sonra bildirimi kaldır
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+                
+                return;
+            }
+            
+            socket.emit('chatMessage', { 
+                message,
+                roomCode,
+                isAdmin: isAdmin
+            }, (response) => {
+                if (response.success) {
+                    input.value = '';
+                    
+                    // Admin olmayan kullanıcılar için bekleme süresini başlat
+                    if (!isAdmin) {
+                        mesajBekleme = true;
+                        
+                        // Bekleme süresini başlat
+                        const sendButton = document.querySelector('#chat-input + button');
+                        const originalText = sendButton.textContent;
+                        
+                        // Gönder butonunu devre dışı bırak
+                        sendButton.disabled = true;
+                        sendButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        input.disabled = true;
+                        
+                        // Geri sayımı başlat
+                        let kalanSure = 5;
+                        sendButton.textContent = `${kalanSure}s`;
+                        
+                        const countInterval = setInterval(() => {
+                            kalanSure--;
+                            sendButton.textContent = `${kalanSure}s`;
+                            
+                            if (kalanSure <= 0) {
+                                clearInterval(countInterval);
+                                sendButton.textContent = originalText;
+                                sendButton.disabled = false;
+                                sendButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                                input.disabled = false;
+                                input.focus();
+                                mesajBekleme = false;
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Mesaj gönderilirken bir hata oluştu!',
+                        icon: 'error',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        }
+
+        // Enter tuşu ile mesaj gönderme
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Form gönderimini engelle
+                
+                const message = document.getElementById('chat-input').value.trim();
+                if (!message) {
+                    return; // Boş mesaj göndermeyi engelle
+                }
+                
+                // Admin olmayan kullanıcılar için bekleme süresi kontrolü
+                if (!isAdmin && mesajBekleme) {
+                    const notification = document.createElement('div');
+                    notification.className = 'text-center mt-2 text-yellow-300 font-medium';
+                    notification.id = 'cooldown-notification';
+                    notification.textContent = 'Yeni mesaj göndermek için lütfen bekleyin...';
+                    
+                    // Daha önce eklenmiş bildirim varsa kaldır
+                    const oldNotification = document.getElementById('cooldown-notification');
+                    if (oldNotification) {
+                        oldNotification.remove();
+                    }
+                    
+                    document.getElementById('chat-input').insertAdjacentElement('afterend', notification);
+                    
+                    // 3 saniye sonra bildirimi kaldır
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                sendMessage();
+            }
+        });
+
+        // Chat mesajlarını alma
+        socket.on('chatMessage', (data) => {
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Eğer temizleme mesajı varsa kaldır
+            const cleanMessage = chatMessages.querySelector('.chat-clean-message');
+            if (cleanMessage) {
+                cleanMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            
+            if (data.isAdmin) {
+                messageDiv.className = 'bg-purple-500 bg-opacity-50 p-2 rounded-lg';
+                messageDiv.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="text-yellow-300 font-semibold">[Admin] ${data.username}:</span>
+                        <span class="text-white">${escapeHtml(data.message)}</span>
+                    </div>
+                `;
+            } else if (data.isSystem) {
+                messageDiv.className = 'bg-gray-500 bg-opacity-50 p-2 rounded-lg';
+                messageDiv.innerHTML = `
+                    <div class="text-center text-gray-300 italic">
+                        ${data.message}
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'bg-white bg-opacity-20 p-2 rounded-lg';
+                messageDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-semibold">${data.username}:</span>
+                            <span>${escapeHtml(data.message)}</span>
+                        </div>
+                        ${isAdmin ? `
+                            <button onclick="mutePlayer('${data.userId}')" class="text-red-400 hover:text-red-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // HTML karakterlerini escape etme
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Kullanıcıyı susturma
+        function mutePlayer(userId) {
+            if (!isAdmin) return;
+            socket.emit('mutePlayer', { userId, roomCode });
+        }
+
+        // Susturulma durumu
+        socket.on('muted', () => {
+            mutedPlayers.add(socket.id);
+            const chatInput = document.getElementById('chat-input');
+            chatInput.disabled = true;
+            chatInput.placeholder = 'Admin tarafından susturuldunuz';
+            
+            // Kullanıcıya bildirim göster
+            temaSweetAlert({
+                title: 'Susturuldunuz!',
+                text: 'Admin tarafından susturuldunuz. Mesaj gönderemezsiniz.',
+                icon: 'warning',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        });
+
+        // Susturma kaldırma
+        socket.on('unmuted', () => {
+            mutedPlayers.delete(socket.id);
+            const chatInput = document.getElementById('chat-input');
+            chatInput.disabled = false;
+            chatInput.placeholder = 'Mesajınızı yazın...';
+            
+            // Kullanıcıya bildirim göster
+            temaSweetAlert({
+                title: 'Susturmanız Kaldırıldı!',
+                text: 'Artık mesaj gönderebilirsiniz.',
+                icon: 'success',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        });
+        
+        // Susturma fonksiyonları
+        function toggleMute(userId, username) {
+            if (!isAdmin) return;
+            socket.emit('toggleMute', { userId, roomCode }, (response) => {
+                if (!response.success) {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Susturma işlemi başarısız oldu!',
+                        icon: 'error',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        }
+
+        // Emoji panelini açıp kapatma
+        function toggleEmojiPanel() {
+            const emojiPanel = document.getElementById('emoji-panel');
+            emojiPanel.classList.toggle('hidden');
+        }
+        
+        // Emoji gönderme
+        function sendEmoji(emoji) {
+            // Boş emoji kontrolü
+            if (!emoji || emoji.trim() === '') {
+                return;
+            }
+            
+            // Admin olmayan kullanıcılar için bekleme süresi kontrolü
+            if (!isAdmin && mesajBekleme) {
+                const notification = document.createElement('div');
+                notification.className = 'text-center mt-2 text-yellow-300 font-medium';
+                notification.id = 'cooldown-notification';
+                notification.textContent = 'Yeni mesaj göndermek için lütfen bekleyin...';
+                
+                // Daha önce eklenmiş bildirim varsa kaldır
+                const oldNotification = document.getElementById('cooldown-notification');
+                if (oldNotification) {
+                    oldNotification.remove();
+                }
+                
+                document.getElementById('chat-input').insertAdjacentElement('afterend', notification);
+                
+                // 3 saniye sonra bildirimi kaldır
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+                
+                // Emoji panelini kapat
+                document.getElementById('emoji-panel').classList.add('hidden');
+                
+                return;
+            }
+            
+            socket.emit('chatMessage', { 
+                message: emoji,
+                roomCode,
+                isAdmin: isAdmin
+            }, (response) => {
+                if (!response.success) {
+                    temaSweetAlert({
+                        title: 'Hata!',
+                        text: response.message || 'Emoji gönderilirken bir hata oluştu!',
+                        icon: 'error',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                } else if (!isAdmin) {
+                    // Admin olmayan kullanıcılar için bekleme süresini başlat
+                    mesajBekleme = true;
+                    
+                    // Bekleme süresini başlat
+                    const sendButton = document.querySelector('#chat-input + button');
+                    const originalText = sendButton.textContent;
+                    const input = document.getElementById('chat-input');
+                    
+                    // Gönder butonunu devre dışı bırak
+                    sendButton.disabled = true;
+                    sendButton.classList.add('opacity-50', 'cursor-not-allowed');
+                    input.disabled = true;
+                    
+                    // Geri sayımı başlat
+                    let kalanSure = 5;
+                    sendButton.textContent = `${kalanSure}s`;
+                    
+                    const countInterval = setInterval(() => {
+                        kalanSure--;
+                        sendButton.textContent = `${kalanSure}s`;
+                        
+                        if (kalanSure <= 0) {
+                            clearInterval(countInterval);
+                            sendButton.textContent = originalText;
+                            sendButton.disabled = false;
+                            sendButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                            input.disabled = false;
+                            input.focus();
+                            mesajBekleme = false;
+                        }
+                    }, 1000);
+                }
+            });
+            
+            // Emoji gönderildikten sonra panel kapansın
+            document.getElementById('emoji-panel').classList.add('hidden');
+        }
+
+        // Chat temizleme (sadece admin)
+        function clearChat() {
+            if (isAdmin) {
+                socket.emit('clearChat', { roomCode });
+            }
+        }
+
+        // Chat temizleme eventi
+        socket.on('chatCleared', () => {
+            const chatMessages = document.getElementById('chat-messages');
+            // Animasyonlu temizleme efekti
+            chatMessages.style.transition = 'opacity 0.3s ease';
+            chatMessages.style.opacity = '0';
+            
+            setTimeout(() => {
+                chatMessages.innerHTML = `
+                    <div class="chat-clean-message text-center py-8 text-gray-300 italic">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <p class="text-lg">Sohbet geçmişi temizlendi.</p>
+                        <p class="text-sm mt-1">Admin tarafından tüm mesajlar silindi.</p>
+                    </div>
+                `;
+                chatMessages.style.opacity = '1';
+            }, 300);
+        });
+    </script>
+</body>
+</html>
