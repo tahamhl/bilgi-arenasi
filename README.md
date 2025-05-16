@@ -67,13 +67,7 @@ node server.js
 4. Branch'inizi push edin (`git push origin feature/yeniOzellik`)
 5. Pull Request oluşturun
 
-## 📝 Yapılacaklar
 
-- [ ] Yeni kategoriler eklenecek
-- [ ] Profil sayfası eklenecek
-- [ ] Puan sistemi geliştirilecek
-- [ ] Aylık sıralama sistemi eklenecek
-- [ ] Mobil uygulama geliştirilecek
 
 ## 📄 Lisans
 
