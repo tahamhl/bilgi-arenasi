@@ -6,8 +6,8 @@ Bilgi Arenası, gerçek zamanlı çok oyunculu bir bilgi yarışması uygulamas�
 
 Bu proje aşağıdaki geliştiriciler tarafından ortaklaşa geliştirilmiştir:
 
-- [İsim Soyisim 1](https://github.com/kullanici1) - Frontend Geliştirici
-- [İsim Soyisim 2](https://github.com/kullanici2) - Backend Geliştirici
+- [Levent Kutay Sezer](https://github.com/kutibios) - Geliştirici
+- [Taha Mehel](https://github.com/tahamhl) - Geliştirici
 
 ## 🚀 Özellikler
 
@@ -59,13 +59,6 @@ DB_NAME=bilgi_arenasi
 node server.js
 ```
 
-## 🤝 Katkıda Bulunma
-
-1. Bu repoyu forklayın
-2. Yeni bir branch oluşturun (`git checkout -b feature/yeniOzellik`)
-3. Değişikliklerinizi commit edin (`git commit -am 'Yeni özellik: Açıklama'`)
-4. Branch'inizi push edin (`git push origin feature/yeniOzellik`)
-5. Pull Request oluşturun
 
 
 
